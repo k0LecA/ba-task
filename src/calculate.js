@@ -28,7 +28,7 @@ export default function calculateDeliveryCost(delivery) {
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
 
-    const logisticsCost = new Decimal(distance)
+    let logisticsCost = new Decimal(distance)
         .mul(deliveryPrice)
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
