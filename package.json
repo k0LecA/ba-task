@@ -1,0 +1,22 @@
+{
+  "name": "ba-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k0LecA/ba-task.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/k0LecA/ba-task/issues"
+  },
+  "homepage": "https://github.com/k0LecA/ba-task#readme",
+  "dependencies": {
+    "decimal.js": "^10.6.0"
+  }
+}
