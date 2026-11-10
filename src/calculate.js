@@ -36,8 +36,10 @@ export default function calculateDeliveryCost(delivery) {
         logisticsCost = logisticsCost.add(smallLoadFee);
     }
 
+    const fuelType=type.trim().toUpperCase();
+
     const excise = new Decimal(volume)
-        .mul(type === 'GASOLINE' ? GASOLINE : type === 'DIESEL' ? DIESEL : LPG)
+        .mul(fuelType === 'GASOLINE' ? GASOLINE : fuelType === 'DIESEL' ? DIESEL : LPG)
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
     let vat = new Decimal(netFuelPrice)
