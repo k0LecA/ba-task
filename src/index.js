@@ -7,15 +7,12 @@ const shipments = JSON.parse(
     fs.readFileSync('shipments.json', 'utf8')
 );
 
-//console.log(shipments);
-
-//console.log(shipments[0]);
-
-//console.log(calculateDeliveryCost(shipments));
+const seenIds = new Set();
 
 for (const shipment of shipments) {
-    if(!validateDelivery(shipment)) {
-        console.log(`Invalid shipment data for ID: ${shipment.id}`);
+    const error = validateDelivery(shipment, seenIds);
+    if (error) {
+        console.log(shipment.id, error);
         continue;
     }
     const result = calculateDeliveryCost(shipment);
