@@ -1,17 +1,25 @@
 import Decimal from 'decimal.js';
 
-export default function calculateDeliveryCost(delivery) {
+export default function calculateDeliveryCost(delivery, custom) {
     const { type, client, volume, distance, basePrice } = delivery;
+    const { vat: customVat, excise: customExcise } = custom ?? { vat: undefined, excise: undefined };
     
     const deliveryPrice= new Decimal(1.8);
     const smallLoadFee= new Decimal(150);
 
-    const GASOLINE= new Decimal(0.47);
+    let GASOLINE= new Decimal(0.47);
     const DIESEL= new Decimal(0.33);
     const LPG= new Decimal(0.18);
 
-    const VATold= new Decimal(0.21);
-    const VATnew= new Decimal(0.23);
+
+    let VATold= new Decimal(0.21);
+    let VATnew= new Decimal(0.23);
+
+    if(custom!==undefined) {
+        VATold = new Decimal(custom.vat);
+        VATnew = new Decimal(custom.vat);
+        GASOLINE = new Decimal(custom.excise);
+    }
 
     let discountRate;
     if(volume > 20000) {
@@ -33,7 +41,7 @@ export default function calculateDeliveryCost(delivery) {
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
     if(volume < 1000) {
-        logisticsCost = logisticsCost.add(smallLoadFee);
+        logisticsCost = logisticsCost.add(smallLoadFee).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     }
 
     const fuelType=type.trim().toUpperCase();
@@ -45,6 +53,7 @@ export default function calculateDeliveryCost(delivery) {
     let vat = new Decimal(netFuelPrice)
         .add(logisticsCost)
         .add(excise);
+
 
     if(client === 'EXEMPT') {
         vat = new Decimal(0);
