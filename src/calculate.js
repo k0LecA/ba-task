@@ -1,4 +1,27 @@
 import Decimal from 'decimal.js';
+import { parse, isValid } from 'date-fns';
+
+export function calculateBonus1(results, startDate, endDate) {
+    let count = 0;
+    let vatSum = new Decimal(0);
+    let mostExpensiveShipment = null;
+
+    for (const result of results) {
+        const shipmentDate = ['yyyy-MM-dd', 'dd/MM/yyyy']
+            .map(format => parse(result.date, format, new Date()))
+            .find(date => isValid(date));
+
+        if (shipmentDate >= startDate && shipmentDate <= endDate) {
+            count++;
+            vatSum = vatSum.add(result.vat);
+        }
+        if (mostExpensiveShipment === null || result.grandTotal.gt(mostExpensiveShipment.grandTotal)) {
+            mostExpensiveShipment = result;
+        }
+    }
+
+    return { count, mostExpensiveShipment, vatSum };
+}
 
 export default function calculateDeliveryCost(delivery, custom) {
     const { type, client, volume, distance, basePrice } = delivery;
