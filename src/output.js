@@ -4,7 +4,7 @@ fs.mkdirSync('output', { recursive: true });
 
 function writeResults(results, filename = 'task1.csv') {
     const rows = [
-        'Jonas Butrimas',
+        'Jonas_Butrimas',
         'ShipmentID,NetFuelPrice,LogisticsCost,TotalTax,GrandTotal'
     ];
 
@@ -28,7 +28,7 @@ function writeErrors(errors, filename = 'errors.csv') {
     ];
 
     for (const error of errors) {
-        rows.push(`${error.id},${error.error}`);
+        rows.push(`${error.id ?? ''},${error.error}`);
     }
 
     fs.mkdirSync('output', { recursive: true });
@@ -37,10 +37,10 @@ function writeErrors(errors, filename = 'errors.csv') {
 
 function writeBonus1(count, mostExpensiveShipment, vatSum, filename = 'bonus1.csv') {
     const rows = [
-        'Jonas Butrimas',
-        'ShipmentCount,mostExpensiveID,TotalVAT'
+        'Jonas_Butrimas',
+        'ShipmentCount,MostExpensiveID,TotalVAT'
     ];
-    rows.push(`${count},${mostExpensiveShipment?.id ?? ''},${vatSum.toFixed(2)}`);
+    rows.push(`${count},${mostExpensiveShipment?.id ?? 'N/A'},${vatSum.toFixed(2)}`);
     fs.writeFileSync(`output/${filename}`, rows.join('\n'));
 }
 
