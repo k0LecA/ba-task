@@ -15,9 +15,9 @@ export function calculateBonus1(results, startDate, endDate) {
         if (shipmentDate >= startDate && shipmentDate <= endDate) {
             count++;
             vatSum = vatSum.add(result.vat);
-        }
-        if (mostExpensiveShipment === null || result.grandTotal.gt(mostExpensiveShipment.grandTotal)) {
-            mostExpensiveShipment = result;
+            if (mostExpensiveShipment === null || result.grandTotal.gt(mostExpensiveShipment.grandTotal)) {
+                mostExpensiveShipment = result;
+            }
         }
     }
 
