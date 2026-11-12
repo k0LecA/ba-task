@@ -1,3 +1,4 @@
+import { parse, isValid, format } from 'date-fns';
 
 export default function validateDelivery(delivery, seenIds = new Set()) {
     const { id, type, client, date, volume, distance, basePrice } = delivery;
@@ -52,19 +53,9 @@ export default function validateDelivery(delivery, seenIds = new Set()) {
 function isValidDate(value) {
     if (typeof value !== 'string') return false;
 
-    let year, month, day;
+    return ['yyyy-MM-dd', 'dd/MM/yyyy'].some(pattern => {
+        const date = parse(value, pattern, new Date(2000, 0, 1));
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        [year, month, day] = value.split('-').map(Number);
-    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-        [day, month, year] = value.split('/').map(Number);
-    } else {
-        return false;
-    }
-
-    const date = new Date(Date.UTC(year, month - 1, day));
-
-    return date.getUTCFullYear() === year &&
-        date.getUTCMonth() === month - 1 &&
-        date.getUTCDate() === day;
+        return isValid(date) && format(date, pattern) === value;
+    });
 }
