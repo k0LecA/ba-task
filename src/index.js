@@ -27,9 +27,9 @@ for (const shipment of shipments) {
     const result2 = calculateDeliveryCost(shipment, { vat: customVat, excise: customExcise });
     results1.push({ id: shipment.id, ...result1 });
     results2.push({ id: shipment.id, date: shipment.date, ...result2 });
-    writeResults(results1, 'task1.csv');
-    writeResults(results2, 'task2.csv');
 }
+writeResults(results1, 'task1.csv');
+writeResults(results2, 'task2.csv');
 writeErrors(errors);
 const { count, mostExpensiveShipment, vatSum } = calculateBonus1(results2, parsedStartDate, parsedEndDate);
 writeBonus1(count, mostExpensiveShipment, vatSum, 'bonus1.csv');
