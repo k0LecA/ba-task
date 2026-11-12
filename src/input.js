@@ -61,5 +61,5 @@ export default async function readCustomOptions() {
     const customVat = new Decimal(vat).dividedBy(100);
     const customExcise = new Decimal(excise);
 
-    return { customVat, customExcise };
+    return { customVat, customExcise, parsedStartDate, parsedEndDate };
 }
