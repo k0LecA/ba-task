@@ -10,6 +10,12 @@ export default async function readCustomOptions() {
     const lines = rl[Symbol.asyncIterator]();
 
     const formats = ['yyyy-MM-dd', 'dd/MM/yyyy'];
+    const parseInputDate = value => {
+        if (typeof value !== 'string') return undefined;
+        return formats
+            .map(pattern => ({ pattern, date: parse(value, pattern, new Date(2000, 0, 1)) }))
+            .find(({ pattern, date }) => isValid(date) && format(date, pattern) === value)?.date;
+    };
 
     let vat, excise, startDate, endDate;
     let parsedStartDate, parsedEndDate;
@@ -23,22 +29,16 @@ export default async function readCustomOptions() {
         ({ value: startDate } = await lines.next());
         process.stdout.write('Enter End Date (yyyy-MM-dd or dd/MM/yyyy): ');
         ({ value: endDate } = await lines.next());
-        for(const f of formats) {
-            parsedStartDate = parse(startDate, f, new Date());
-            parsedEndDate = parse(endDate, f, new Date());
-            if (isValid(parsedStartDate) && isValid(parsedEndDate)) {
-                console.log(`Start Date: ${format(parsedStartDate, 'yyyy-MM-dd')}`);
-                console.log(`End Date: ${format(parsedEndDate, 'yyyy-MM-dd')}`);
-                break;
-            }
+        if ([vat, excise, startDate, endDate].some(value => value === undefined)) {
+            rl.close();
+            throw new Error('Input ended before all required answers were received.');
+        }
+        parsedStartDate = parseInputDate(startDate);
+        parsedEndDate = parseInputDate(endDate);
+        if (!parsedStartDate || !parsedEndDate) {
             console.log('Invalid date format. Please try again.');
+            continue;
         }
-        if (isValid(parsedStartDate) && isValid(parsedEndDate)) {
-            console.log(`Start Date: ${format(parsedStartDate, 'yyyy-MM-dd')}`);
-            console.log(`End Date: ${format(parsedEndDate, 'yyyy-MM-dd')}`);
-            break;
-        }
-        console.log('Invalid date format. Please try again.');
         if(isNaN(vat) || isNaN(excise)) {
             console.log('Invalid input. Please enter numeric values.');
             continue;
@@ -53,6 +53,8 @@ export default async function readCustomOptions() {
             continue;
         }
 
+        console.log(`Start Date: ${format(parsedStartDate, 'yyyy-MM-dd')}`);
+        console.log(`End Date: ${format(parsedEndDate, 'yyyy-MM-dd')}`);
         break;
     }
 
