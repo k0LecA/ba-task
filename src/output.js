@@ -35,4 +35,13 @@ function writeErrors(errors, filename = 'errors.csv') {
     fs.writeFileSync(`output/${filename}`, rows.join('\n'));
 }
 
-export { writeResults, writeErrors };
+function writeBonus1(count, mostExpensiveShipment, vatSum, filename = 'bonus1.csv') {
+    const rows = [
+        'Jonas Butrimas',
+        'ShipmentCount,mostExpensiveID,TotalVAT'
+    ];
+    rows.push(`${count},${mostExpensiveShipment?.id ?? ''},${vatSum.toFixed(2)}`);
+    fs.writeFileSync(`output/${filename}`, rows.join('\n'));
+}
+
+export { writeResults, writeErrors, writeBonus1 };
