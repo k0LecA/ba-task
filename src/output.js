@@ -21,7 +21,7 @@ function writeResults(results, filename = 'task1.csv') {
     fs.writeFileSync(`output/${filename}`, rows.join('\n'));
 }
 
-function writeErrors(errors, filename = 'task1_errors.csv') {
+function writeErrors(errors, filename = 'errors.csv') {
     const rows = [
         'Jonas_Butrimas',
         'ShipmentID,ErrorCode'
