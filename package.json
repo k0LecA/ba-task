@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/k0LecA/ba-task#readme",
   "dependencies": {
+    "date-fns": "^4.4.0",
     "decimal.js": "^10.6.0"
   }
 }
