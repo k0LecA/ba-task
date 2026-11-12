@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import { parse, isValid } from 'date-fns';
+import { PRICING } from './rates.js';
 
 export function calculateBonus1(results, startDate, endDate) {
     let count = 0;
@@ -27,16 +28,16 @@ export default function calculateDeliveryCost(delivery, custom) {
     const { type, client, volume, distance, basePrice } = delivery;
     const { vat: customVat, excise: customExcise } = custom ?? { vat: undefined, excise: undefined };
     
-    const deliveryPrice= new Decimal(1.8);
-    const smallLoadFee= new Decimal(150);
+    const deliveryPrice= new Decimal(PRICING.deliveryPerKm);
+    const smallLoadFee= new Decimal(PRICING.smallLoadFee);
 
-    let GASOLINE= new Decimal(0.47);
-    const DIESEL= new Decimal(0.33);
-    const LPG= new Decimal(0.18);
+    let GASOLINE= new Decimal(PRICING.excise.GASOLINE);
+    const DIESEL= new Decimal(PRICING.excise.DIESEL);
+    const LPG= new Decimal(PRICING.excise.LPG);
 
 
-    let VATold= new Decimal(0.21);
-    let VATnew= new Decimal(0.23);
+    let VATold= new Decimal(PRICING.vatBefore);
+    let VATnew= new Decimal(PRICING.vatFrom);
 
     if(custom!==undefined) {
         VATold = new Decimal(custom.vat);
@@ -45,10 +46,10 @@ export default function calculateDeliveryCost(delivery, custom) {
     }
 
     let discountRate;
-    if(volume > 20000) {
-        discountRate = new Decimal(0.10);
-    } else if(volume > 5000) {
-        discountRate = new Decimal(0.05);
+    if(volume > PRICING.largeDiscountLimit) {
+        discountRate = new Decimal(PRICING.largeDiscountRate);
+    } else if(volume > PRICING.discountLimit) {
+        discountRate = new Decimal(PRICING.discountRate);
     } else {
         discountRate = new Decimal(0);
     }
@@ -63,7 +64,7 @@ export default function calculateDeliveryCost(delivery, custom) {
         .mul(deliveryPrice)
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
-    if(volume < 1000) {
+    if(volume < PRICING.smallLoadLimit) {
         logisticsCost = logisticsCost.add(smallLoadFee).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     }
 
@@ -80,9 +81,9 @@ export default function calculateDeliveryCost(delivery, custom) {
 
     if(client === 'EXEMPT') {
         vat = new Decimal(0);
-    } else if(client === 'PRIVATE' && new Date(delivery.date) >= new Date('2024-01-01')) {
+    } else if(client === 'PRIVATE' && new Date(delivery.date) >= new Date(PRICING.vatChangeDate)) {
         vat = vat.mul(VATnew).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    } else if(client === 'PRIVATE' && new Date(delivery.date) < new Date('2024-01-01')) {
+    } else if(client === 'PRIVATE' && new Date(delivery.date) < new Date(PRICING.vatChangeDate)) {
         vat = vat.mul(VATold).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     } else if(client === 'GOVERNMENT') {
         vat = new Decimal(0); //lol
