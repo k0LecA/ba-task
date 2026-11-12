@@ -69,6 +69,7 @@ export default function calculateDeliveryCost(delivery, custom) {
     }
 
     const fuelType=type.trim().toUpperCase();
+    const clientType = client.trim().toUpperCase();
 
     const excise = new Decimal(volume)
         .mul(fuelType === 'GASOLINE' ? GASOLINE : fuelType === 'DIESEL' ? DIESEL : LPG)
@@ -79,14 +80,12 @@ export default function calculateDeliveryCost(delivery, custom) {
         .add(excise);
 
 
-    if(client === 'EXEMPT') {
+    if(clientType === 'EXEMPT') {
         vat = new Decimal(0);
-    } else if(client === 'PRIVATE' && new Date(delivery.date) >= new Date(PRICING.vatChangeDate)) {
+    } else if(clientType === 'PRIVATE' && new Date(delivery.date) >= new Date(PRICING.vatChangeDate)) {
         vat = vat.mul(VATnew).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    } else if(client === 'PRIVATE' && new Date(delivery.date) < new Date(PRICING.vatChangeDate)) {
+    } else if(clientType === 'PRIVATE' && new Date(delivery.date) < new Date(PRICING.vatChangeDate)) {
         vat = vat.mul(VATold).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    } else if(client === 'GOVERNMENT') {
-        vat = new Decimal(0); //lol
     }
 
     const totalTax= new Decimal(excise).add(vat).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
