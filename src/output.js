@@ -30,8 +30,6 @@ function writeErrors(errors, filename = 'errors.csv') {
     for (const error of errors) {
         rows.push(`${error.id ?? ''},${error.error}`);
     }
-
-    fs.mkdirSync('output', { recursive: true });
     fs.writeFileSync(`output/${filename}`, rows.join('\n'));
 }
 
