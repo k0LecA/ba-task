@@ -39,6 +39,10 @@ export default async function readCustomOptions() {
             console.log('Invalid date format. Please try again.');
             continue;
         }
+        if (parsedStartDate > parsedEndDate) {
+            console.log('End Date must be on or after Start Date. Please try again.');
+            continue;
+        }
         if(isNaN(vat) || isNaN(excise)) {
             console.log('Invalid input. Please enter numeric values.');
             continue;
