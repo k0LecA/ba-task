@@ -21,7 +21,6 @@ for (const shipment of shipments) {
     const error = validateDelivery(shipment, seenIds);
     if (error) {
         errors.push({ id: shipment.id, error });
-        writeErrors(errors);
         continue;
     }
     const result1 = calculateDeliveryCost(shipment);
@@ -31,5 +30,6 @@ for (const shipment of shipments) {
     writeResults(results1, 'task1.csv');
     writeResults(results2, 'task2.csv');
 }
+writeErrors(errors);
 const { count, mostExpensiveShipment, vatSum } = calculateBonus1(results2, parsedStartDate, parsedEndDate);
 writeBonus1(count, mostExpensiveShipment, vatSum, 'bonus1.csv');
