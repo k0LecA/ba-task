@@ -3,15 +3,17 @@ import { parse, isValid, format } from 'date-fns';
 export default function validateDelivery(delivery, seenIds = new Set()) {
     const { id, type, client, date, volume, distance, basePrice } = delivery;
 
+    if (id != null) {
+        if (seenIds.has(id)) {
+            return 'DUPLICATE_ID';
+        }
+        seenIds.add(id);
+    }
+
     if ([id, type, client, date, volume, distance, basePrice]
         .some(value => value == null)) {
         return 'MISSING_FIELD';
     }
-
-    if (seenIds.has(id)) {
-        return 'DUPLICATE_ID';
-    }
-    seenIds.add(id);
 
     const fuelType = typeof type === 'string'
         ? type.trim().toUpperCase()
