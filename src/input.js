@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 import readline from 'node:readline';
-import { parse, isValid, format } from 'date-fns';
+import parseDate from './date.js';
 
 export default async function readCustomOptions() {
     const rl = readline.createInterface({
@@ -8,14 +8,6 @@ export default async function readCustomOptions() {
     });
 
     const lines = rl[Symbol.asyncIterator]();
-
-    const formats = ['yyyy-MM-dd', 'dd/MM/yyyy'];
-    const parseInputDate = value => {
-        if (typeof value !== 'string') return undefined;
-        return formats
-            .map(pattern => ({ pattern, date: parse(value, pattern, new Date(2000, 0, 1)) }))
-            .find(({ pattern, date }) => isValid(date) && format(date, pattern) === value)?.date;
-    };
 
     const readLine = async prompt => {
         process.stdout.write(prompt);
@@ -41,7 +33,7 @@ export default async function readCustomOptions() {
 
     const readDate = async (prompt, startDate) => {
         while (true) {
-            const date = parseInputDate(await readLine(prompt));
+            const date = parseDate(await readLine(prompt));
             if (!date) {
                 console.log('Invalid date format. Please try again.');
                 continue;

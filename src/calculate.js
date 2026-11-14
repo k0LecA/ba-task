@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js';
-import { parse, addDays, isValid, differenceInCalendarDays, format } from 'date-fns';
+import { addDays, differenceInCalendarDays, format } from 'date-fns';
 import { PRICING, LATE_INTEREST } from './constants.js';
+import parseDate from './date.js';
 
 export function calculateBonus1(results, startDate, endDate) {
     let count = 0;
@@ -8,9 +9,7 @@ export function calculateBonus1(results, startDate, endDate) {
     let mostExpensiveShipment = null;
 
     for (const result of results) {
-        const shipmentDate = ['yyyy-MM-dd', 'dd/MM/yyyy']
-            .map(format => parse(result.date, format, new Date()))
-            .find(date => isValid(date));
+        const shipmentDate = parseDate(result.date);
 
         if (shipmentDate >= startDate && shipmentDate <= endDate) {
             count++;
@@ -25,17 +24,17 @@ export function calculateBonus1(results, startDate, endDate) {
 }
 
 export function calculateBonus2(delivery, payment) {
-    const reportDate = parse(LATE_INTEREST.reportDate, 'yyyy-MM-dd', new Date());
-    const rateChangeDate = parse(LATE_INTEREST.rateChangeDate, 'yyyy-MM-dd', new Date());
+    const reportDate = parseDate(LATE_INTEREST.reportDate);
+    const rateChangeDate = parseDate(LATE_INTEREST.rateChangeDate);
 
-    const deliveryDate = ['yyyy-MM-dd', 'dd/MM/yyyy'].map(fmt => parse(delivery.date, fmt, new Date())).find(date => isValid(date));
+    const deliveryDate = parseDate(delivery.date);
 
     const dueDate = addDays(deliveryDate, 30);
 
     let endDate = reportDate;
 
     if (payment) {
-        endDate = ['yyyy-MM-dd', 'dd/MM/yyyy'].map(fmt => parse(payment.paidDate, fmt, new Date())).find(date => isValid(date));
+        endDate = parseDate(payment.paidDate);
     }
 
     const daysLate = Math.max(0, differenceInCalendarDays(endDate, dueDate));
@@ -103,10 +102,8 @@ export default function calculateDeliveryCost(delivery, custom) {
 
     const fuelType=type.trim().toUpperCase();
     const clientType = client.trim().toUpperCase();
-    const deliveryDate = ['yyyy-MM-dd', 'dd/MM/yyyy']
-        .map(pattern => parse(delivery.date, pattern, new Date()))
-        .find(date => isValid(date));
-    const vatChangeDate = parse(PRICING.vatChangeDate, 'yyyy-MM-dd', new Date());
+    const deliveryDate = parseDate(delivery.date);
+    const vatChangeDate = parseDate(PRICING.vatChangeDate);
 
     const excise = new Decimal(volume)
         .mul(fuelType === 'GASOLINE' ? GASOLINE : fuelType === 'DIESEL' ? DIESEL : LPG)

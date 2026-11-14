@@ -1,4 +1,4 @@
-import { parse, isValid, format } from 'date-fns';
+import parseDate from './date.js';
 
 function validateDelivery(delivery, seenIds = new Set()) {
     const { id, type, client, date, volume, distance, basePrice } = delivery;
@@ -31,7 +31,7 @@ function validateDelivery(delivery, seenIds = new Set()) {
         return 'UNKNOWN_CLIENT';
     }
 
-    if (!isValidDate(date)) {
+    if (!parseDate(date)) {
         return 'INVALID_DATE';
     }
 
@@ -59,21 +59,11 @@ function validatePayment(payment) {
         return 'MISSING_FIELD';
     }
 
-    if (!isValidDate(paidDate)) {
+    if (!parseDate(paidDate)) {
         return 'INVALID_DATE';
     }
 
     return null;
-}
-
-function isValidDate(value) {
-    if (typeof value !== 'string') return false;
-
-    return ['yyyy-MM-dd', 'dd/MM/yyyy'].some(pattern => {
-        const date = parse(value, pattern, new Date(2000, 0, 1));
-
-        return isValid(date) && format(date, pattern) === value;
-    });
 }
 
 export { validateDelivery, validatePayment };
