@@ -1,8 +1,8 @@
-import calculateDeliveryCost, { calculateBonus1 } from './calculate.js';
+import calculateDeliveryCost, { calculateBonus1, calculateBonus2 } from './calculate.js';
 import fs from 'node:fs';
-import validateDelivery from './validate.js';
+import validateDelivery, { validatePayment } from './validate.js';
 import readCustomOptions from './input.js';
-import { writeResults, writeErrors,writeBonus1 } from './output.js';
+import { writeResults, writeErrors, writeBonus1, writeBonus2 } from './output.js';
 
 const shipments = JSON.parse(
     fs.readFileSync('shipments.json', 'utf8')
@@ -30,6 +30,30 @@ for (const shipment of shipments) {
 }
 writeResults(results1, 'task1.csv');
 writeResults(results2, 'task2.csv');
-writeErrors(errors);
 const { count, mostExpensiveShipment, vatSum } = calculateBonus1(results2, parsedStartDate, parsedEndDate);
 writeBonus1(count, mostExpensiveShipment, vatSum, 'bonus1.csv');
+
+const payments = JSON.parse(
+    fs.readFileSync('payments.json', 'utf8')
+);
+
+const validPayments = [];
+
+for (const payment of payments) {
+    const error = validatePayment(payment);
+    if (error) {
+        //errors.push({ id: payment?.id, error });
+        continue;
+    }
+    validPayments.push(payment);
+}
+
+const bonus2 = [];
+
+for (const delivery of results1) {
+    const payment = validPayments.find(payment => payment.id === delivery.id);
+    bonus2.push(calculateBonus2(delivery, payment));
+}
+
+writeBonus2(bonus2);
+

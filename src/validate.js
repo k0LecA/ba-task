@@ -1,6 +1,6 @@
 import { parse, isValid, format } from 'date-fns';
 
-export default function validateDelivery(delivery, seenIds = new Set()) {
+function validateDelivery(delivery, seenIds = new Set()) {
     const { id, type, client, date, volume, distance, basePrice } = delivery;
 
     if (id != null) {
@@ -52,6 +52,20 @@ export default function validateDelivery(delivery, seenIds = new Set()) {
     return null;
 }
 
+export function validatePayment(payment) {
+    const { id, paidDate } = payment ?? {};
+
+    if ([id, paidDate].some(value => value == null)) {
+        return 'MISSING_FIELD';
+    }
+
+    if (!isValidDate(paidDate)) {
+        return 'INVALID_DATE';
+    }
+
+    return null;
+}
+
 function isValidDate(value) {
     if (typeof value !== 'string') return false;
 
@@ -61,3 +75,5 @@ function isValidDate(value) {
         return isValid(date) && format(date, pattern) === value;
     });
 }
+
+export default validateDelivery;

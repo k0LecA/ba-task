@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
-import { parse, isValid } from 'date-fns';
-import { PRICING } from './rates.js';
+import { parse, addDays, isValid, differenceInCalendarDays, format } from 'date-fns';
+import { PRICING, LATE_INTEREST } from './constants.js';
 
 export function calculateBonus1(results, startDate, endDate) {
     let count = 0;
@@ -22,6 +22,39 @@ export function calculateBonus1(results, startDate, endDate) {
     }
 
     return { count, mostExpensiveShipment, vatSum };
+}
+
+export function calculateBonus2(delivery, payment) {
+    const reportDate = parse(LATE_INTEREST.reportDate, 'yyyy-MM-dd', new Date());
+    const rateChangeDate = parse(LATE_INTEREST.rateChangeDate, 'yyyy-MM-dd', new Date());
+
+    const deliveryDate = ['yyyy-MM-dd', 'dd/MM/yyyy'].map(fmt => parse(delivery.date, fmt, new Date())).find(date => isValid(date));
+
+    const dueDate = addDays(deliveryDate, 30);
+
+    let endDate = reportDate;
+
+    if (payment) {
+        endDate = ['yyyy-MM-dd', 'dd/MM/yyyy'].map(fmt => parse(payment.paidDate, fmt, new Date())).find(date => isValid(date));
+    }
+
+    const daysLate = Math.max(0, differenceInCalendarDays(endDate, dueDate));
+
+    if (daysLate === 0) {
+        return { id: delivery.id, dueDate: format(dueDate, 'yyyy-MM-dd'), daysLate: 0, lateInterest: new Decimal(0) };
+    }
+
+    const daysBefore = Math.min(
+        daysLate,
+        Math.max(0, differenceInCalendarDays(rateChangeDate, dueDate) - 1)
+    );
+    const daysAfter = daysLate - daysBefore;
+
+    const lateInterest = new Decimal(delivery.grandTotal).mul(daysBefore).mul(LATE_INTEREST.yearlyRateBefore).div(365).plus(
+            new Decimal(delivery.grandTotal).mul(daysAfter).mul(LATE_INTEREST.yearlyRateFrom).div(365)
+        ).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+
+    return { id: delivery.id, dueDate: format(dueDate, 'yyyy-MM-dd'), daysLate, lateInterest };
 }
 
 export default function calculateDeliveryCost(delivery, custom) {
@@ -98,6 +131,7 @@ export default function calculateDeliveryCost(delivery, custom) {
         excise,
         vat,
         totalTax,
-        grandTotal
+        grandTotal,
+        date: delivery.date
     };
 }

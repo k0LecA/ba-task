@@ -42,4 +42,17 @@ function writeBonus1(count, mostExpensiveShipment, vatSum, filename = 'bonus1.cs
     fs.writeFileSync(`output/${filename}`, rows.join('\n'));
 }
 
-export { writeResults, writeErrors, writeBonus1 };
+function writeBonus2(payments, filename = 'bonus2.csv') {
+    const rows = [
+        'Jonas_Butrimas',
+        'ShipmentID,DueDate,DaysLate,LateInterest'
+    ];
+
+    for (const payment of payments) {
+        rows.push(`${payment.id ?? ''},${payment.dueDate ?? ''},${payment.daysLate ?? 0},${payment.lateInterest.toFixed(2)}`);
+    }
+
+    fs.writeFileSync(`output/${filename}`, rows.join('\n'));
+}
+
+export { writeResults, writeErrors, writeBonus1, writeBonus2 };
