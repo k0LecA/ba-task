@@ -11,3 +11,10 @@ export const PRICING = {
     vatFrom: '0.23',
     vatChangeDate: '2024-01-01'
 };
+
+export const LATE_INTEREST = {
+    yearlyRateBefore: '0.12',
+    yearlyRateFrom: '0.09',
+    rateChangeDate: '2024-07-01',
+    reportDate: '2024-07-20'
+};
