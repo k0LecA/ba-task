@@ -52,7 +52,7 @@ function validateDelivery(delivery, seenIds = new Set()) {
     return null;
 }
 
-export function validatePayment(payment) {
+function validatePayment(payment) {
     const { id, paidDate } = payment ?? {};
 
     if ([id, paidDate].some(value => value == null)) {
@@ -76,4 +76,4 @@ function isValidDate(value) {
     });
 }
 
-export default validateDelivery;
+export { validateDelivery, validatePayment };

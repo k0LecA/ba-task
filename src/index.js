@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 import calculateDeliveryCost, { calculateBonus1, calculateBonus2 } from './calculate.js';
-import validateDelivery, { validatePayment } from './validate.js';
+import { validateDelivery, validatePayment } from './validate.js';
 import readCustomOptions from './input.js';
 import { writeResults, writeErrors, writeBonus1, writeBonus2 } from './output.js';
 
