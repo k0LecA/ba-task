@@ -103,6 +103,10 @@ export default function calculateDeliveryCost(delivery, custom) {
 
     const fuelType=type.trim().toUpperCase();
     const clientType = client.trim().toUpperCase();
+    const deliveryDate = ['yyyy-MM-dd', 'dd/MM/yyyy']
+        .map(pattern => parse(delivery.date, pattern, new Date()))
+        .find(date => isValid(date));
+    const vatChangeDate = parse(PRICING.vatChangeDate, 'yyyy-MM-dd', new Date());
 
     const excise = new Decimal(volume)
         .mul(fuelType === 'GASOLINE' ? GASOLINE : fuelType === 'DIESEL' ? DIESEL : LPG)
@@ -115,9 +119,9 @@ export default function calculateDeliveryCost(delivery, custom) {
 
     if(clientType === 'EXEMPT') {
         vat = new Decimal(0);
-    } else if(clientType === 'PRIVATE' && new Date(delivery.date) >= new Date(PRICING.vatChangeDate)) {
+    } else if(clientType === 'PRIVATE' && deliveryDate >= vatChangeDate) {
         vat = vat.mul(VATnew).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    } else if(clientType === 'PRIVATE' && new Date(delivery.date) < new Date(PRICING.vatChangeDate)) {
+    } else if(clientType === 'PRIVATE' && deliveryDate < vatChangeDate) {
         vat = vat.mul(VATold).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     }
 
