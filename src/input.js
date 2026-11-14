@@ -17,57 +17,51 @@ export default async function readCustomOptions() {
             .find(({ pattern, date }) => isValid(date) && format(date, pattern) === value)?.date;
     };
 
-    let vat, excise, startDate, endDate;
-    let parsedStartDate, parsedEndDate;
-
-    while(true) {
-        process.stdout.write('Enter VAT: ');
-        ({ value: vat } = await lines.next());
-        process.stdout.write('Enter Excise: ');
-        ({ value: excise } = await lines.next());
-        process.stdout.write('Enter Start Date (yyyy-MM-dd or dd/MM/yyyy): ');
-        ({ value: startDate } = await lines.next());
-        process.stdout.write('Enter End Date (yyyy-MM-dd or dd/MM/yyyy): ');
-        ({ value: endDate } = await lines.next());
-        if ([vat, excise, startDate, endDate].some(value => value === undefined)) {
-            rl.close();
+    const readLine = async prompt => {
+        process.stdout.write(prompt);
+        const { value, done } = await lines.next();
+        if (done) {
             throw new Error('Input ended before all required answers were received.');
         }
-        parsedStartDate = parseInputDate(startDate);
-        parsedEndDate = parseInputDate(endDate);
-        if (!parsedStartDate || !parsedEndDate) {
-            console.log('Invalid date format. Please try again.');
-            continue;
-        }
-        if (parsedStartDate > parsedEndDate) {
-            console.log('End Date must be on or after Start Date. Please try again.');
-            continue;
-        }
-        vat = vat.trim();
-        excise = excise.trim();
-        if (vat === '' || excise === '' || !Number.isFinite(Number(vat)) || !Number.isFinite(Number(excise))) {
-            console.log('Invalid input. Please enter numeric values.');
-            continue;
-        }
+        return value.trim();
+    };
 
-        if(Number(vat) < 0) {
-            console.log('Invalid VAT rate. Please enter a non-negative value.');
-            continue;
+    const readRate = async prompt => {
+        while (true) {
+            const value = await readLine(prompt);
+            try {
+                const rate = value === '' ? null : new Decimal(value);
+                if (rate?.isFinite() && !rate.isNegative()) return rate;
+            } catch {
+                // Invalid decimal input is handled by the same retry below.
+            }
+            console.log('Invalid rate. Please enter a non-negative number.');
         }
-        if(Number(excise) < 0) {
-            console.log('Invalid Excise rate. Please enter a non-negative value.');
-            continue;
-        }
+    };
 
-        console.log(`Start Date: ${format(parsedStartDate, 'yyyy-MM-dd')}`);
-        console.log(`End Date: ${format(parsedEndDate, 'yyyy-MM-dd')}`);
-        break;
+    const readDate = async (prompt, startDate) => {
+        while (true) {
+            const date = parseInputDate(await readLine(prompt));
+            if (!date) {
+                console.log('Invalid date format. Please try again.');
+                continue;
+            }
+            if (startDate && date < startDate) {
+                console.log('End Date must be on or after Start Date. Please try again.');
+                continue;
+            }
+            return date;
+        }
+    };
+
+    try {
+        const customVat = (await readRate('Enter custom VAT rate for Private clients (%): ')).dividedBy(100);
+        const customExcise = await readRate('Enter custom Excise rate for Gasoline: ');
+        const parsedStartDate = await readDate('Enter Start Date (yyyy-MM-dd or dd/MM/yyyy): ');
+        const parsedEndDate = await readDate('Enter End Date (yyyy-MM-dd or dd/MM/yyyy): ', parsedStartDate);
+
+        return { customVat, customExcise, parsedStartDate, parsedEndDate };
+    } finally {
+        rl.close();
     }
-
-    rl.close();
-
-    const customVat = new Decimal(vat).dividedBy(100);
-    const customExcise = new Decimal(excise);
-
-    return { customVat, customExcise, parsedStartDate, parsedEndDate };
 }
